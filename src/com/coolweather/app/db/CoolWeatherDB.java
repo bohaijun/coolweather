@@ -53,6 +53,7 @@ public class CoolWeatherDB {
 	public void saveProvince(Province province){
 		if(province!=null){
 			ContentValues values = new ContentValues();
+			values.put("id", province.getId());
 			values.put("province_name", province.getProvinceName());
 			values.put("province_code", province.getProvinceCode());
 			
@@ -87,6 +88,7 @@ public class CoolWeatherDB {
 	public void saveCity(City city){
 		if(city!=null){
 			ContentValues values = new ContentValues();
+			values.put("id", city.getId());
 			values.put("city_name", city.getCityName());
 			values.put("city_code", city.getCityCode());
 			values.put("province_id", city.getProvinceId());
@@ -124,6 +126,7 @@ public class CoolWeatherDB {
 	public void saveCounty(County county){
 		if(county!=null){
 			ContentValues values = new ContentValues();
+			values.put("id", county.getId());
 			values.put("county_name", county.getCountyName());
 			values.put("county_code", county.getCountyCode());
 			values.put("city_id", county.getCityId());
