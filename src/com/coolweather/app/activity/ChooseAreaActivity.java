@@ -5,7 +5,10 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
@@ -67,18 +70,33 @@ public class ChooseAreaActivity extends Activity {
 	 * 选中的级别
 	 */
 	private int currentLevel;
-	
-	
+	/**
+	 *是否从 WeatherActivity跳转而来
+	 */
+	private boolean isFromWeatherActivity;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		
+		isFromWeatherActivity = getIntent().getBooleanExtra("from_weather_activity", false);
+		
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		//已经选择了城市 且不是从WeatherActivity跳转而来的则直接打开weatheractivity
+		if(prefs.getBoolean("city_selected", false) && !isFromWeatherActivity){
+			//如果本地已经有天气信息，直接先加载本地信息
+			Intent intent = new Intent(this, WeatherActivity.class);
+			startActivity(intent);
+			
+			finish();
+			return;
+		}
+		
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.choose_area);
+		listView = (ListView)findViewById(R.id.list_view);
 		titleText = (TextView)findViewById(R.id.title_text);
 		
-		listView = (ListView)findViewById(R.id.list_view);
 		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, dataList);
 		listView.setAdapter(adapter);
 		
@@ -88,6 +106,7 @@ public class ChooseAreaActivity extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View view, int index,
 					long arg3) {
+				String weatherCode = "";
 				if(currentLevel==LEVEL_PROVINCE){
 					selectedProvince = provinceList.get(index);
 					queryCities();
@@ -96,7 +115,16 @@ public class ChooseAreaActivity extends Activity {
 					queryCounties();
 				}else if(currentLevel==LEVEL_COUNTY){
 					selectedCounty = countyList.get(index);
+					
+					weatherCode = selectedCounty.getCountyCode();
+					if(!TextUtils.isEmpty(weatherCode)){
+						Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
+						intent.putExtra("weather_code", weatherCode);
+						startActivity(intent);
+						finish();
+					}
 				}
+				
 			}
 		});
 		
@@ -253,6 +281,10 @@ public class ChooseAreaActivity extends Activity {
 		}else if (currentLevel==LEVEL_CITY){
 			queryProvinces();
 		}else{
+			if(isFromWeatherActivity){
+				Intent intent = new Intent(this, WeatherActivity.class);
+				startActivity(intent);
+			}
 			finish();
 		}
 	}
